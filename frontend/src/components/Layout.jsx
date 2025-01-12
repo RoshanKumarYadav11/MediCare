@@ -1,6 +1,4 @@
 // Layout.js
-
-
 import { Outlet } from "react-router-dom"; // To render nested routes
 import Navbar from "./Navbar";
 import Footer from "./Footer";

@@ -12,6 +12,10 @@ import Doctors from "./dash/Doctors";
 import DashboardLayout from "./dash/DashboardLayout";
 import Message from "./dash/Message";
 import AddDoctor from "./dash/AddDoctor";
+import DashHome from "./dash/DashHome";
+import Prescription from "./dash/Prescription";
+import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
+import Unauthorized from "./pages/Unauthorized";
 
 const App = () => {
   return (
@@ -28,11 +32,41 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
 
         {/* Dashboard routes */}
-        <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route path="/dashboard/doctors" element={<Doctors />} />
-          <Route path="/dashboard/messages" element={<Message/>} />
-          <Route path="/dashboard/adddoctor" element={<AddDoctor/>} />
+        <Route
+          element={
+            <ProtectedRoute allowedRoles={["Admin", "Doctor", "Patient"]} />
+          }
+        >
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashHome />} />
+            <Route
+              path="doctors"
+              element={<ProtectedRoute allowedRoles={["Admin"]} />}
+            >
+              <Route index element={<Doctors />} />
+            </Route>
+            <Route
+              path="messages"
+              element={<ProtectedRoute allowedRoles={["Admin"]} />}
+            >
+              <Route index element={<Message />} />
+            </Route>
+            <Route
+              path="adddoctor"
+              element={<ProtectedRoute allowedRoles={["Admin"]} />}
+            >
+              <Route index element={<AddDoctor />} />
+            </Route>
+            <Route
+              path="prescription"
+              element={<ProtectedRoute allowedRoles={["Doctor", "Admin"]} />}
+            >
+              <Route index element={<Prescription />} />
+            </Route>
+          </Route>
         </Route>
+
+        <Route path="/unauthorized" element={<Unauthorized />} />
       </Routes>
     </Router>
   );

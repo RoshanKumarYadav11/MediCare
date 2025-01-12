@@ -1,5 +1,4 @@
 import { FaRegStar, FaShieldAlt, FaHeadset } from "react-icons/fa";
-
 const HeroSection = () => {
   return (
     <section className="relative bg-gradient-to-br from-teal-600 to-blue-500 text-white overflow-hidden">
@@ -75,5 +74,4 @@ const HeroSection = () => {
     </section>
   );
 };
-
 export default HeroSection;

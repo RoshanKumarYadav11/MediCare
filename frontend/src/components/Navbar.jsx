@@ -37,7 +37,7 @@ const Navbar = () => {
       {/* Login Button */}
       <div className="hidden md:flex p-4">
         <button className="bg-[#00df9a] text-white px-4 py-2 rounded-md hover:bg-[#248164]">
-          LOGIN
+        <Link to="/login">Login</Link>
         </button>
       </div>
 
@@ -74,7 +74,7 @@ const Navbar = () => {
         {/* Mobile LOGIN Button */}
         <li className="p-4">
           <button className="bg-[#00df9a] text-white px-4 py-2 rounded-md hover:bg-[#248164] w-full">
-            LOGIN
+            <Link to="/login">Login</Link>
           </button>
         </li>
       </ul>

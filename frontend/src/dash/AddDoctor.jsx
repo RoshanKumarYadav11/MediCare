@@ -5,7 +5,7 @@ const AddDoctor = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [dob, setDob] = useState("");
+  const [nmc, setNmc] = useState("");
   const [gender, setGender] = useState("");
   const [password, setPassword] = useState("");
   const [doctorDepartment, setDoctorDepartment] = useState("");
@@ -40,7 +40,7 @@ const AddDoctor = () => {
     setLastName("");
     setEmail("");
     setPhone("");
-    setDob("");
+    setNmc("");
     setGender("");
     setPassword("");
     setDoctorDepartment("");
@@ -50,7 +50,6 @@ const AddDoctor = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-5">
       <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg p-8">
-        
         <h1 className="text-2xl font-bold text-gray-700 text-center mb-8">
           Register a New Doctor
         </h1>
@@ -97,9 +96,10 @@ const AddDoctor = () => {
               className="border border-gray-300 rounded-lg p-3 w-full"
             />
             <input
-              type="date"
-              value={dob}
-              onChange={(e) => setDob(e.target.value)}
+              type="nmc"
+              placeholder="NMC Number"
+              value={nmc}
+              onChange={(e) => setNmc(e.target.value)}
               className="border border-gray-300 rounded-lg p-3 w-full"
             />
             <select
@@ -110,6 +110,7 @@ const AddDoctor = () => {
               <option value="">Select Gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
+              <option value="other">Other</option>
             </select>
             <input
               type="password"
@@ -134,7 +135,7 @@ const AddDoctor = () => {
           <div className="text-center">
             <button
               type="submit"
-              className="bg-blue-600 text-white rounded-lg py-2 px-6 hover:bg-blue-700"
+              className="bg-[#161e2d] text-white rounded-lg py-2 px-6 hover:bg-blue-900"
             >
               Register New Doctor
             </button>

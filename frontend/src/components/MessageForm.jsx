@@ -10,7 +10,7 @@ const MessageForm = () => {
         <h2 className="text-3xl font-bold text-center mb-6">Send Us A Message</h2>
 
         {/* Form */}
-        <form className="space-y-4">
+        <form method="POST"  className="space-y-4">
           {/* First Name & Last Name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
@@ -33,7 +33,7 @@ const MessageForm = () => {
               className="w-full p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
             />
             <input
-              type="number"
+              type="tel"
               placeholder="Mobile Number"
               className="w-full p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
             />

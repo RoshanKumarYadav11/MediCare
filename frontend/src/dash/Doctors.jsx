@@ -31,13 +31,27 @@ const Doctors = () => {
         <table className="min-w-full table-auto border-collapse border border-gray-200">
           <thead>
             <tr>
-              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">Image</th>
-              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">Email</th>
-              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">Phone</th>
-              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">DOB</th>
-              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">Department</th>
-              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">NMC Number</th>
-              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">Gender</th>
+              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">
+                Image
+              </th>
+              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">
+                Email
+              </th>
+              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">
+                Phone
+              </th>
+              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">
+                DOB
+              </th>
+              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">
+                Department
+              </th>
+              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">
+                NMC Number
+              </th>
+              <th className="py-2 px-4 text-left font-medium text-gray-600 border-b">
+                Gender
+              </th>
             </tr>
           </thead>
           <tbody>

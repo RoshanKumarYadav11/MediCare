@@ -1,6 +1,8 @@
 import { useState } from "react";
 
 const AppointmentForm = () => {
+  const [doctorDepartment, setDoctorDepartment] = useState("");
+  const [doctor, setDoctor] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -8,6 +10,30 @@ const AppointmentForm = () => {
     date: "",
     message: "",
   });
+
+  const departmentsArray = [
+    "Pediatrics",
+    "Orthopedics",
+    "Cardiology",
+    "Neurology",
+    "Oncology",
+    "Radiology",
+    "Physical Therapy",
+    "Dermatology",
+    "ENT",
+  ];
+
+  const doctorMapping = {
+    Pediatrics: ["Dr. Mira Koirala", "Dr. Anurag Koirala"],
+    Orthopedics: ["Dr. Hem Sagar Rimal"],
+    Cardiology: ["Dr. Anurag Koirala"],
+    Neurology: ["Dr. Mira Koirala"],
+    Oncology: [],
+    Radiology: [],
+    "Physical Therapy": [],
+    Dermatology: [],
+    ENT: [],
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,7 +63,7 @@ const AppointmentForm = () => {
           value={formData.name}
           onChange={handleChange}
           placeholder="Enter your name"
-          className="w-full p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
+          className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
           required
         />
       </div>
@@ -54,7 +80,7 @@ const AppointmentForm = () => {
           value={formData.email}
           onChange={handleChange}
           placeholder="Enter your email"
-          className="w-full p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
+          className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
           required
         />
       </div>
@@ -71,7 +97,7 @@ const AppointmentForm = () => {
           value={formData.phone}
           onChange={handleChange}
           placeholder="Enter your phone number"
-          className="w-full p-3  bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
+          className="w-full h-10  p-3  bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
           required
         />
       </div>
@@ -87,9 +113,51 @@ const AppointmentForm = () => {
           name="date"
           value={formData.date}
           onChange={handleChange}
-          className="w-full p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
+          className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
           required
         />
+      </div>
+
+      {/* Department */}
+      <div className="col-span-1">
+        <label htmlFor="department" className="block text-sm font-medium mb-1">
+          Department
+        </label>
+        <select
+          value={doctorDepartment}
+          onChange={(e) => {
+            setDoctorDepartment(e.target.value);
+            setDoctor(""); // Reset doctor selection when department changes
+          }}
+          className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
+        >
+          <option value="">Select Department</option>
+          {departmentsArray.map((depart, index) => (
+            <option value={depart} key={index}>
+              {depart}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Doctor */}
+      <div className="col-span-1">
+        <label htmlFor="doctor" className="block text-sm font-medium mb-1">
+          Doctor
+        </label>
+        <select
+          value={doctor}
+          onChange={(e) => setDoctor(e.target.value)}
+          className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
+          disabled={!doctorDepartment} // Disable if no department is selected
+        >
+          <option value="">Select Doctor</option>
+          {(doctorMapping[doctorDepartment] || []).map((doc, index) => (
+            <option value={doc} key={index}>
+              {doc}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Message */}

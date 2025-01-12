@@ -12,7 +12,9 @@ const Appointment = () => {
             Schedule Your Appointment Today!
           </h1>
           <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-            Take the first step towards better health by booking an appointment with our expert doctors. We’re here to provide you with the care you deserve.
+            Take the first step towards better health by booking an appointment
+            with our expert doctors. We’re here to provide you with the care you
+            deserve.
           </p>
         </div>
       </section>
