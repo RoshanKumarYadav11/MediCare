@@ -1,15 +1,20 @@
 import { useState } from "react";
+import axios from "axios";
 
 const AddDoctor = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [nmc, setNmc] = useState("");
-  const [gender, setGender] = useState("");
-  const [password, setPassword] = useState("");
-  const [doctorDepartment, setDoctorDepartment] = useState("");
-  const [docAvatarPreview, setDocAvatarPreview] = useState("");
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    dob: "",
+    gender: "",
+    password: "",
+    address: "",
+    doctorDepartment: "",
+    role: "Doctor",
+  });
+
+  const [errorMessage, setErrorMessage] = useState("");
 
   const departmentsArray = [
     "Pediatrics",
@@ -23,29 +28,74 @@ const AddDoctor = () => {
     "ENT",
   ];
 
-  const handleAvatar = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      setDocAvatarPreview(reader.result);
-    };
+  // Handle input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form submitted");
-    // Clear form fields for demonstration
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setPhone("");
-    setNmc("");
-    setGender("");
-    setPassword("");
-    setDoctorDepartment("");
-    setDocAvatarPreview("");
+  // Validate and get missing fields
+  const validateForm = () => {
+    const missingFields = [];
+
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key !== "role" && key !== "doctorDepartment" && value.trim() === "") {
+        missingFields.push(key);
+      }
+    });
+
+    if (missingFields.length > 0) {
+      setErrorMessage(
+        `Please fill in the following fields: ${missingFields.join(", ")}`
+      );
+      return false;
+    }
+
+    setErrorMessage(""); 
+    return true;
   };
+
+  // Handle form submission
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // Validate form data
+  if (Object.values(formData).some((value) => value === "")) {
+    alert("Please fill in all required fields.");
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      "http://localhost:4000/api/v1/user/adddoctor",
+      formData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    alert(response.data.message || "Doctor registered successfully!");
+
+    // Clear form data after successful submission
+    setFormData({
+      fullName: "",
+      email: "",
+      phone: "",
+      dob: "",
+      gender: "",
+      password: "",
+      address: "",
+      doctorDepartment: "",
+      role: "Doctor", // Keep the default role for new entries
+    });
+  } catch (err) {
+    console.error("Error submitting the form:", err);
+    alert(err.response?.data?.message || "Error submitting the form.");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-5">
@@ -54,80 +104,89 @@ const AddDoctor = () => {
           Register a New Doctor
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex flex-col items-center mb-4">
-            <img
-              src={docAvatarPreview || "/docHolder.jpg"}
-              alt="Doctor Avatar"
-              className="w-24 h-24 rounded-full object-cover mb-3 border-2 border-gray-300"
-            />
-            <input
-              type="file"
-              onChange={handleAvatar}
-              className="text-sm text-gray-600"
-            />
-          </div>
+          {errorMessage && (
+            <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-6">
+              {errorMessage}
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <input
               type="text"
-              placeholder="First Name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              name="fullName"
+              placeholder="Full Name"
+              value={formData.fullName}
+              onChange={handleInputChange}
               className="border border-gray-300 rounded-lg p-3 w-full"
-            />
-            <input
-              type="text"
-              placeholder="Last Name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="border border-gray-300 rounded-lg p-3 w-full"
+              required
             />
             <input
               type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              placeholder="Email Address"
+              value={formData.email}
+              onChange={handleInputChange}
               className="border border-gray-300 rounded-lg p-3 w-full"
+              required
             />
             <input
-              type="tel"
-              placeholder="Mobile Number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              type="text"
+              name="phone"
+              placeholder="Phone Number"
+              value={formData.phone}
+              onChange={handleInputChange}
               className="border border-gray-300 rounded-lg p-3 w-full"
+              required
             />
             <input
-              type="nmc"
-              placeholder="NMC Number"
-              value={nmc}
-              onChange={(e) => setNmc(e.target.value)}
+              type="date"
+              name="dob"
+              placeholder="Date of Birth"
+              value={formData.dob}
+              onChange={handleInputChange}
               className="border border-gray-300 rounded-lg p-3 w-full"
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className="border border-gray-300 rounded-lg p-3 w-full"
+              required
+            />
+            <input
+              type="text"
+              name="address"
+              placeholder="Address"
+              value={formData.address}
+              onChange={handleInputChange}
+              className="border border-gray-300 rounded-lg p-3 w-full"
+              required
             />
             <select
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
+              name="gender"
+              value={formData.gender}
+              onChange={handleInputChange}
               className="border border-gray-300 rounded-lg p-3 w-full bg-white"
+              required
             >
               <option value="">Select Gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
-              <option value="other">Other</option>
+              <option value="Other">Other</option>
             </select>
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="border border-gray-300 rounded-lg p-3 w-full"
-            />
             <select
-              value={doctorDepartment}
-              onChange={(e) => setDoctorDepartment(e.target.value)}
+              name="doctorDepartment"
+              value={formData.doctorDepartment}
+              onChange={handleInputChange}
               className="border border-gray-300 rounded-lg p-3 w-full bg-white"
+              required
             >
               <option value="">Select Department</option>
-              {departmentsArray.map((depart, index) => (
-                <option value={depart} key={index}>
-                  {depart}
+              {departmentsArray.map((department, index) => (
+                <option key={index} value={department}>
+                  {department}
                 </option>
               ))}
             </select>

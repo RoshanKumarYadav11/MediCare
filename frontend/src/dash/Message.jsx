@@ -1,37 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaEye } from "react-icons/fa";
+import axios from "axios";
 
 const Messages = () => {
-  const [messages] = useState([
-    {
-      _id: 1,
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      phone: "123-456-7890",
-      message: "This is a test message.",
-    },
-    {
-      _id: 2,
-      firstName: "Jane",
-      lastName: "Smith",
-      email: "jane.smith@example.com",
-      phone: "987-654-3210",
-      message: "I have a question about your product.",
-    },
-    {
-      _id: 3,
-      firstName: "Alice",
-      lastName: "Johnson",
-      email: "alice.johnson@example.com",
-      phone: "555-123-4567",
-      message:
-        "Looking forward to your reply! lorem ipsum dolor sit amet consectetur adipisicing elit. doloremque, voluptatibus.",
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
 
   const [selectedMessage, setSelectedMessage] = useState(null); // State for selected message
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const { data } = await axios.get(
+          "http://localhost:4000/api/v1/message/getall",
+          { withCredentials: true }
+        );
+        setMessages(data.messages);
+      } catch (error) {
+        console.log(error.response.data.message);
+      }
+    };
+    fetchMessages();
+  }, []);
 
   const openModal = (message) => {
     setSelectedMessage(message);

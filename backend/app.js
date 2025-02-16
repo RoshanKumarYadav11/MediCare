@@ -5,16 +5,23 @@ import cookieParser from "cookie-parser";
 import { dbConnection } from "./database/dbConnection.js";
 import { errorMiddleware } from "./middlewares/error.js";
 import userRouter from "./router/userRouter.js";
+import messageRouter from "./router/messageRouter.js";
+import appointmentRouter from "./router/appointmentsRouter.js";
 import { serverConnection } from "./server.js";
+import chatRouter from "./router/chatRouter.js";
+import notificationRouter from "./router/notificationRouter.js";
+import prescriptionRouter from "./router/prescriptionRouter.js";
+import billingRouter from "./router/billingRouter.js";
 
 const app = express();
-// Should be changed to
-config({ path: "./.env" });
+config({ path: "./config/config.env" });
+
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL], // Adjust if needed for the frontend URL
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: process.env.FRONTEND_URL,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -24,6 +31,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/message", messageRouter);
+app.use("/api/v1/appointment", appointmentRouter);
+app.use('/api/v1/chat', chatRouter);
+app.use("/api/v1/notifications", notificationRouter);
+app.use("/api/v1/prescriptions", prescriptionRouter);
+app.use("/api/v1/billing", billingRouter);
 
 // Error handling middleware
 app.use(errorMiddleware);

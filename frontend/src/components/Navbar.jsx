@@ -1,19 +1,61 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { AiOutlineClose, AiOutlineMenu } from "react-icons/ai";
+import { isAuthenticated, getRole } from "../utils/auth";
 
 const Navbar = () => {
   const [nav, setNav] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [role, setRole] = useState(null); // Added role state
+  const navigate = useNavigate();
+
+  useEffect(() => {
+
+    const fetchRole = async () => {
+      const userRole = await getRole(); // Fetch user role
+      setRole(userRole);
+
+      // Check if user is authenticated and has a valid role ('Patient', 'Doctor', or 'Admin')
+      const loggedIn =
+        isAuthenticated() &&
+        (userRole === "Patient" ||
+          userRole === "Doctor" ||
+          userRole === "Admin");
+      setIsLoggedIn(loggedIn);
+    };
+
+    fetchRole();
+  }, []);
 
   const handleNav = () => {
     setNav(!nav);
   };
 
+  const handleLogout = () => {
+    localStorage.clear(); // Clear all localStorage items
+    setIsLoggedIn(false);
+    setRole(null); // Clear role
+    navigate("/"); // Redirect to home page
+  };
+
+  const handleAppointmentClick = () => {
+    if (isLoggedIn) {
+      navigate("/appointment");
+    } else {
+      navigate("/login");
+    }
+  };
+console.log()
+  // Navigation items for patients
   const navItems = [
     { id: 1, text: "Home", path: "/" },
-    { id: 2, text: "Appointment", path: "/appointment" },
-    { id: 3, text: "About", path: "/about" },
+    { id: 2, text: "About", path: "/about" },
+    ...(isLoggedIn && role === "Patient"
+      ? [{ id: 3, text: "Dashboard", path: "/dashboard" }]
+      : []),
   ];
+
+  
 
   return (
     <div className="bg-gradient-to-br from-gray-800 to-gray-900 flex justify-between items-center h-24 max-w-full mx-auto px-4 text-white">
@@ -34,11 +76,26 @@ const Navbar = () => {
         ))}
       </ul>
 
-      {/* Login Button */}
-      <div className="hidden md:flex p-4">
-        <button className="bg-[#00df9a] text-white px-4 py-2 rounded-md hover:bg-[#248164]">
-        <Link to="/login">Login</Link>
+      {/* Desktop Buttons */}
+      <div className="hidden md:flex p-4 space-x-5">
+        <button
+          className="bg-[#00df9a] text-white px-4 py-2 rounded-md hover:bg-[#248164]"
+          onClick={handleAppointmentClick}
+        >
+          Book An Appointment
         </button>
+        {isLoggedIn ? (
+          <button
+            className="bg-[#00df9a] text-white px-4 py-2 rounded-md hover:bg-[#248164]"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        ) : (
+          <button className="bg-[#00df9a] text-white px-4 py-2 rounded-md hover:bg-[#248164]">
+            <Link to="/login">Login</Link>
+          </button>
+        )}
       </div>
 
       {/* Mobile Navigation Icon */}
@@ -71,11 +128,35 @@ const Navbar = () => {
           </li>
         ))}
 
-        {/* Mobile LOGIN Button */}
-        <li className="p-4">
-          <button className="bg-[#00df9a] text-white px-4 py-2 rounded-md hover:bg-[#248164] w-full">
-            <Link to="/login">Login</Link>
+        {/* Mobile Buttons */}
+        <li className="p-4 space-y-4">
+          <button
+            className="bg-[#00df9a] text-white px-4 py-2 rounded-md hover:bg-[#248164] w-full"
+            onClick={() => {
+              handleAppointmentClick();
+              setNav(false);
+            }}
+          >
+            Book An Appointment
           </button>
+          {isLoggedIn ? (
+            <button
+              className="bg-[#00df9a] text-white px-4 py-2 rounded-md hover:bg-[#248164] w-full"
+              onClick={() => {
+                handleLogout();
+                setNav(false);
+              }}
+            >
+              Logout
+            </button>
+          ) : (
+            <button
+              className="bg-[#00df9a] text-white px-4 py-2 rounded-md hover:bg-[#248164] w-full"
+              onClick={() => setNav(false)}
+            >
+              <Link to="/login">Login</Link>
+            </button>
+          )}
         </li>
       </ul>
     </div>

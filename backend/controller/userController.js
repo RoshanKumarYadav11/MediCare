@@ -1,47 +1,105 @@
 import { User } from "../models/userSchema.js";
+import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
+import ErrorHandler from "../middlewares/error.js";
+import { Doctor } from "../models/doctorSchema.js";
+import bcrypt from "bcrypt";
+import { generateToken } from "../utils/jwtToken.js";
 
 // Login User
 
-export const loginUser = async (req, res) => {
+export const getUserProfile = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const userId = req.user.id; // Assuming `req.user` is set by authentication middleware
 
-    // Find user by email
-    const user = await User.findOne({ email }).select("+password");
+    // Find user in both User and Doctor collections
+    let user = await User.findById(userId);
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      user = await Doctor.findById(userId);
     }
 
-    // Compare entered password with the stored hashed password
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) {
+      return next(new ErrorHandler("User not found", 404));
     }
-
-    // Generate JWT token
-    const token = user.generateJsonWebToken();
-
-    // Log role for debugging purposes
-    console.log("User Role:", user.role);  // This will help us confirm the role in the backend
 
     res.status(200).json({
-      message: "Login successful",
-      token,
-      user: {
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-      },
+      success: true,
+      user,
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
-};
+});
+
+
+export const loginUser = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user by email in both User and Doctor collections
+    let user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      user = await Doctor.findOne({ email }).select("+password"); // Check in Doctor schema
+    }
+
+    if (!user) {
+      return next(new ErrorHandler("Invalid credentials", 400));
+    }
+
+    // Compare entered password with the stored hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return next(new ErrorHandler("Invalid credentials", 400));
+    }
+    // Check if the user's role is "Patient" or "Doctor"
+    if (user.role !== "Patient" && user.role !== "Doctor") {
+      return next(
+        new ErrorHandler("Access denied. Patients and Doctors only.", 403)
+      );
+    }
+    // Generate JWT token and set it in a cookie
+    generateToken(user, "Login successful", 200, res);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+//admin login
+export const adminLogin = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user by email in User collection
+    let user = await User.findOne({ email }).select("+password");
+     if (!user) {
+      user = await Doctor.findOne({ email }).select("+password"); // Check in Doctor schema
+    }
+
+    if (!user) {
+      return next(new ErrorHandler("Invalid credentials", 400));
+    }
+
+    // Check if the user's role is "admin"
+    if (user.role !== "Admin") {
+      return next(new ErrorHandler("Access denied. Admins only.", 403));
+    }
+
+    // Compare entered password with the stored hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return next(new ErrorHandler("Invalid credentials", 400));
+    }
+
+    // Generate JWT token and set it in a cookie
+    generateToken(user, "Admin login successful", 200, res);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
 
 //Register User
-export const registerUser = async (req, res) => {
+export const registerUser = catchAsyncErrors(async (req, res) => {
   try {
-    const { fullName, email, phone,address, password, role, dob, gender } = req.body;
+    const { fullName, email, phone, address, password, role, dob, gender } =
+      req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -61,23 +119,26 @@ export const registerUser = async (req, res) => {
       gender,
     });
 
-    // Hash the password before saving
     await newUser.save();
 
-    // Generate JWT token after registration
-    const token = newUser.generateJsonWebToken();
-
-    res.status(201).json({
-      message: "User registered successfully",
-      token,
-      user: {
-        id: newUser._id,
-        email: newUser.email,
-        role: newUser.role,
-      },
-    });
+    // Generate JWT token and set it in a cookie
+    generateToken(newUser, "User registered successfully", 201, res);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
-};
+});
+
+export const getAllPatient = catchAsyncErrors(async (req, res, next) => {
+  // Retrieve all patients from the database
+  const patients = await User.find({ role: "Patient" });
+
+  if (!patients || patients.length === 0) {
+    return next(new ErrorHandler("No Patient Found", 404));
+  }
+
+  // Send the patient data in the response
+  res.status(200).json({
+    success: true,
+    patients,
+  });
+});

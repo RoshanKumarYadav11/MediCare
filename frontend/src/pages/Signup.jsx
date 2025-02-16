@@ -223,9 +223,9 @@ const Signup = () => {
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <LiaEyeSolid className="text-xl" />
-                ) : (
                   <LiaEyeSlashSolid className="text-xl" />
+                ) : (
+                  <LiaEyeSolid className="text-xl" />
                 )}
               </button>
             </div>
@@ -256,9 +256,9 @@ const Signup = () => {
                 }
               >
                 {showConfirmPassword ? (
-                  <LiaEyeSolid className="text-xl" />
-                ) : (
                   <LiaEyeSlashSolid className="text-xl" />
+                ) : (
+                  <LiaEyeSolid className="text-xl" />
                 )}
               </button>
             </div>

@@ -8,49 +8,64 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("user"); // Tracks active tab (user/admin)
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:4000/api/v1/user/login", {
-        email,
-        password,
-      });
-      
-      // Make sure the response contains the correct data
-      console.log(response.data);  // Log the entire response to check the structure
-  
-      const { token, user } = response.data;  // Make sure you're getting user from the response
-      const { role } = user;  // Extract role from user object
-  
-      // Log role for debugging purposes
-      console.log("Role received:", role);  // This should now show the correct role
-  
-      // Save token to localStorage
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("role", role);
-  
-      // Redirect based on role
+const handleLogin = async (e) => {
+  e.preventDefault();
+  const endpoint =
+    activeTab === "admin"
+      ? "http://localhost:4000/api/v1/user/adminlogin"
+      : "http://localhost:4000/api/v1/user/login";
+
+  try {
+    const response = await axios.post(endpoint, {
+      email,
+      password,
+    });
+
+    const { token } = response.data; // Only store token
+    localStorage.setItem("token", token);
+    
+    // Set Axios default headers for future requests
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+    // Fetch user details separately
+    const userResponse = await axios.get("http://localhost:4000/api/v1/user/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const { user } = userResponse.data;
+    const { role } = user;
+
+    // Redirect based on role and activeTab
+    if (activeTab === "admin") {
       if (role === "Admin") {
         navigate("/dashboard");
-      } else if (role === "Doctor") {
+      } else {
+        setError("Unauthorized access for Admin Dashboard.");
+      }
+    } else {
+      if (role === "Doctor") {
         navigate("/dashboard");
       } else if (role === "Patient") {
-        navigate("/dashboard");
+        navigate("/");
       } else {
         setError("Invalid user role. Contact support.");
       }
-    } catch (error) {
-      setError(error.response?.data?.message || "Login failed. Try again.");
     }
-  };
-  
+  } catch (error) {
+    setError(error.response?.data?.message || "Login failed. Try again.");
+  }
+};
+
+
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-cover bg-center"
@@ -60,8 +75,31 @@ const Login = () => {
       }}
     >
       <div className="relative w-full max-w-md p-12 bg-white bg-opacity-10 rounded-lg backdrop-blur-lg shadow-lg">
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-6">
+          <button
+            className={`px-4 py-2 font-semibold rounded-lg ${
+              activeTab === "user"
+                ? "bg-[#00df9a] text-white"
+                : "bg-white bg-opacity-20 text-white"
+            }`}
+            onClick={() => setActiveTab("user")}
+          >
+            User Login
+          </button>
+          <button
+            className={`px-4 py-2 font-semibold rounded-lg ml-2 ${
+              activeTab === "admin"
+                ? "bg-[#00df9a] text-white"
+                : "bg-white bg-opacity-20 text-white"
+            }`}
+            onClick={() => setActiveTab("admin")}
+          >
+            Admin Login
+          </button>
+        </div>
         <h2 className="text-3xl font-semibold text-white text-center mb-6">
-          Medicare Login
+          {activeTab === "admin" ? "Admin Login" : "User Login"}
         </h2>
         <form onSubmit={handleLogin}>
           <div className="mb-4">
@@ -98,9 +136,9 @@ const Login = () => {
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
-                <LiaEyeSolid className="text-xl" />
-              ) : (
                 <LiaEyeSlashSolid className="text-xl" />
+              ) : (
+                <LiaEyeSolid className="text-xl" />
               )}
             </button>
           </div>
@@ -112,12 +150,14 @@ const Login = () => {
             Login
           </button>
         </form>
-        <p className="text-white text-center mt-4">
-          Don’t have an account?{" "}
-          <a href="/signup" className="text-[#248164] hover:underline">
-            Sign up
-          </a>
-        </p>
+        {activeTab === "user" && (
+          <p className="text-white text-center mt-4">
+            Don’t have an account?{" "}
+            <a href="/signup" className="text-[#248164] hover:underline">
+              Sign up
+            </a>
+          </p>
+        )}
       </div>
     </div>
   );

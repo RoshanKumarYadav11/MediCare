@@ -16,6 +16,13 @@ import DashHome from "./dash/DashHome";
 import Prescription from "./dash/Prescription";
 import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
 import Unauthorized from "./pages/Unauthorized";
+import Availability from "./dash/Availability";
+import PatientReports from "./dash/PatientReport";
+import Chat from "./dash/Chat";
+import AppointmentHistory from "./dash/AppointmentHistory";
+import NotificationBell from "./global/NotificationBell";
+import Invoice from "./dash/Invoice";
+import AddInvoice from "./dash/AddInvoice";
 
 const App = () => {
   return (
@@ -26,6 +33,7 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/appointment" element={<Appointment />} />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/patientreport" element={<PatientReports />} />
         </Route>
 
         <Route path="/login" element={<Login />} />
@@ -63,6 +71,29 @@ const App = () => {
             >
               <Route index element={<Prescription />} />
             </Route>
+            <Route
+              path="chat"
+              element={<ProtectedRoute allowedRoles={["Doctor", "Patient"]} />}
+            >
+              <Route index element={<Chat />} />
+            </Route>
+
+            <Route
+              path="availability"
+              element={<ProtectedRoute allowedRoles={["Doctor", "Admin"]} />}
+            >
+              <Route index element={<Availability />} />
+            </Route>
+            <Route
+              path="addinvoice"
+              element={<ProtectedRoute allowedRoles={["Admin"]} />}
+            >
+              <Route index element={<AddInvoice />} />
+            </Route>
+            <Route path="patientreport" element={<PatientReports />} />
+            <Route path="appointmenthistory" element={<AppointmentHistory />} />
+            <Route path="notifications" element={<NotificationBell />} />
+            <Route path="invoice" element={<Invoice />} />
           </Route>
         </Route>
 

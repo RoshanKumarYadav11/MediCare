@@ -1,82 +1,215 @@
-import { Navigate } from "react-router-dom";
 import { IoTrashBin } from "react-icons/io5";
 import { FaUserDoctor } from "react-icons/fa6";
 import { LuCalendarClock } from "react-icons/lu";
-import { useState } from "react";
+import swal from "sweetalert2";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 const Dashboard = () => {
-  const isAuthenticated = true; // Static content for authentication
-  const admin = {
-    firstName: "John",
-    lastName: "Doe",
-    gender: "Male",
-  }; // Static admin content
+  const [userName, setUserName] = useState("");
+  const [userRole, setUserRole] = useState("");
+  const [appointments, setAppointments] = useState([]);
+  const [doctors, setDoctors] = useState([]);
 
-  const [appointments, setAppointments] = useState([
-    {
-      _id: "1",
-      firstName: "Alice",
-      lastName: "Smith",
-      appointment_date: "2024-12-25T10:00:00Z",
-      doctor: { firstName: "Dr. Bob", lastName: "Brown" },
-      department: "Cardiology",
-      status: "Pending",
-      hasVisited: false,
-    },
-    {
-      _id: "2",
-      firstName: "Charlie",
-      lastName: "Johnson",
-      appointment_date: "2024-12-26T11:00:00Z",
-      doctor: { firstName: "Dr. Alice", lastName: "White" },
-      department: "Neurology",
-      status: "Accepted",
-      hasVisited: true,
-    },
-  ]);
+    useEffect(() => {
+      const fetchUserData = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) throw new Error("Authentication token not found!");
 
-  const doctors = [
-    { firstName: "Dr. Bob", lastName: "Brown" },
-    { firstName: "Dr. Alice", lastName: "White" },
-  ];
+          const { data } = await axios.get(
+            "http://localhost:4000/api/v1/user/me",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
 
-  const getDefaultImage = (gender) => {
-    if (gender === "Male") return "dash/male-default.png";
-    if (gender === "Female") return "dash/female-default.png";
-    return "/other-default.png";
+          // Set the user data
+          setUserName(data.user.fullName);
+          setUserRole(data.user.role);
+        } catch (error) {
+          Swal.fire(
+            "Error",
+            error.response?.data?.message || "Failed to fetch user data.",
+            "error"
+          );
+        }
+      };
+      fetchUserData();
+    }, []);
+    
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("Authentication token not found!");
+        const { data } = await axios.get(
+          "http://localhost:4000/api/v1/appointment/appointments",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setAppointments(data.appointments);
+      } catch (error) {
+        swal.fire("Error", error.response.data.message, "error");
+        setAppointments([]);
+      }
+    };
+    fetchAppointments();
+  }, []);
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          Swal.fire("Error", "User not authenticated. Please log in.", "error");
+        }
+        const { data } = await axios.get(
+          "http://localhost:4000/api/v1/user/doctors",
+
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setDoctors(data.doctors);
+      } catch (error) {
+        swal.fire("Error", error.response.data.message, "error");
+        setDoctors([]);
+      }
+    };
+    fetchDoctors();
+  }, []);
+
+  const getDefaultImage = (userRole) => {
+    if (userRole === "Doctor") return "/dash/doctor-default.png";
+    if (userRole === "Admin") return "/dash/admin-default.png";
+    return "/dash/patient-default.png";
   };
 
-  const handleStatusChange = (id, status) => {
-    setAppointments((prev) =>
-      prev.map((appointment) =>
-        appointment._id === id ? { ...appointment, status } : appointment
-      )
-    );
+  const handleStatusChange = async (id, newStatus) => {
+    // Confirm before updating the status
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: `You are about to change the status to "${newStatus}".`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, change it!",
+    });
+
+    if (!result.isConfirmed) {
+      return; // User canceled the action
+    }
+
+    try {
+      // Optimistically update the local state
+      setAppointments((prev) =>
+        prev.map((appointment) =>
+          appointment._id === id
+            ? { ...appointment, status: newStatus }
+            : appointment
+        )
+      );
+
+      // Send the update to the backend
+      const response = await axios.patch(
+        `http://localhost:4000/api/v1/appointment/appointment/${id}`,
+        {
+          status: newStatus,
+        }
+      );
+
+      Swal.fire({
+        title: "Success!",
+        text: "Appointment status updated successfully!",
+        icon: "success",
+        confirmButtonText: "Okay",
+      });
+
+      console.log("Status updated successfully:", response.data);
+    } catch (error) {
+      console.error("Error updating appointment:", error);
+
+      // Rollback the local state if the API call fails
+      setAppointments((prev) =>
+        prev.map((appointment) =>
+          appointment._id === id
+            ? { ...appointment, status: "Pending" }
+            : appointment
+        )
+      );
+
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to update the appointment. Please try again.",
+        icon: "error",
+        confirmButtonText: "Okay",
+      });
+    }
   };
 
-  const handleDelete = (id) => {
-    setAppointments((prev) =>
-      prev.filter((appointment) => appointment._id !== id)
-    );
-  };
+  const handleDelete = async (id) => {
+    try {
+      console.log("Deleting appointment with ID:", id); // Debugging log
 
-  if (!isAuthenticated) {
-    return <Navigate to={"/login"} />;
-  }
+      const result = await swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "No, cancel!",
+      });
+
+      if (result.isConfirmed) {
+        const response = await axios.delete(
+          `http://localhost:4000/api/v1/appointment/appointment/${id}`,
+          { withCredentials: true }
+        );
+
+        console.log("Delete response:", response.data); // Log response
+
+        setAppointments((prev) =>
+          prev.filter((appointment) => appointment._id !== id)
+        );
+
+        swal.fire("Deleted!", "The appointment has been deleted.", "success");
+      }
+    } catch (error) {
+      console.error("Error deleting appointment:", error);
+      swal.fire(
+        "Error",
+        error.response?.data?.message || "Failed to delete the appointment.",
+        "error"
+      );
+    }
+  };
 
   return (
     <>
       <section className="dashboard page">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="bg-white p-6 rounded-lg shadow-md ">
             <img
-              src={getDefaultImage(admin.gender)}
-              alt="docImg"
-              className="w-20 h-20 rounded-full mx-auto mb-4"
+              src={getDefaultImage(userRole )}
+              alt={userRole+"-icon"}
+              className="w-24 h-auto rounded-full mx-auto mb-4"
             />
             <div className="text-center my-auto">
               <p className="text-gray-500">
-                Hello,{`${admin.firstName} ${admin.lastName}`}
+                Hello,
+                {userName
+                  ? userName.replace(/['"]+/g, "").charAt(0).toUpperCase() +
+                    userName.replace(/['"]+/g, "").slice(1)
+                  : ""}
               </p>
             </div>
           </div>
@@ -109,46 +242,77 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {appointments.map((appointment) => (
-                  <tr key={appointment._id} className="even:bg-gray-50">
-                    <td className="px-4 py-2 border">{`${appointment.firstName} ${appointment.lastName}`}</td>
-                    <td className="px-4 py-2 border">
-                      {new Date(appointment.appointment_date).toLocaleString(
-                        "en-US",
-                        {
-                          weekday: "short",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }
-                      )}
-                    </td>
-                    <td className="px-4 py-2 border">{`${appointment.doctor.firstName} ${appointment.doctor.lastName}`}</td>
-                    <td className="px-4 py-2 border">
-                      {appointment.department}
-                    </td>
-                    <td className="px-4 py-2 border text-center">
-                      <select
-                        value={appointment.status}
-                        onChange={(e) =>
-                          handleStatusChange(appointment._id, e.target.value)
-                        }
-                        className="border rounded px-2 py-1 text-sm"
-                      >
-                        <option value="Pending">Pending</option>
-                        <option value="Accepted">Accepted</option>
-                        <option value="Rejected">Rejected</option>
-                      </select>
-                    </td>
-                    <td className="px-4 py-4 border text-center flex justify-center gap-4">
-                      <IoTrashBin
-                        className="text-red-500  text-xl cursor-pointer "
-                        title="Delete Appointment"
-                        onClick={() => handleDelete(appointment._id)}
-                      />
-                    </td>
-                  </tr>
-                ))}
+                {appointments && appointments.length > 0
+                  ? appointments.map((appointment) => (
+                      <tr key={appointment._id} className="even:bg-gray-50">
+                        <td className="px-4 py-2 border">
+                          {appointment.fullName}
+                        </td>
+
+                        <td className="px-4 py-2 border">
+                          {new Date(appointment.appointmentDate).toLocaleString(
+                            "en-US",
+                            {
+                              weekday: "short",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
+                          )}
+                        </td>
+                        <td className="px-4 py-2 border">
+                          {appointment.doctorName}
+                        </td>
+                        <td className="px-4 py-2 border">
+                          {appointment.doctorDepartment}
+                        </td>
+                        <td className="px-4 py-2 border text-center">
+                          <select
+                            value={appointment.status}
+                            onChange={(e) =>
+                              handleStatusChange(
+                                appointment._id,
+                                e.target.value
+                              )
+                            }
+                            className={
+                              appointment.status === "Pending"
+                                ? "bg-yellow-400 text-gray-700"
+                                : appointment.status === "Accepted"
+                                ? "bg-green-400 text-gray-700"
+                                : "bg-red-400 text-gray-700"
+                            }
+                          >
+                            <option
+                              className="bg-yellow-400 text-gray-700 "
+                              value="Pending"
+                            >
+                              Pending
+                            </option>
+                            <option
+                              className="bg-green-400 text-gray-700"
+                              value="Accepted"
+                            >
+                              Accepted
+                            </option>
+                            <option
+                              className="bg-red-400 text-gray-700"
+                              value="Rejected"
+                            >
+                              Rejected
+                            </option>
+                          </select>
+                        </td>
+                        <td className="px-4 py-4 border text-center flex justify-center gap-4">
+                          <IoTrashBin
+                            className="text-red-500  text-xl cursor-pointer "
+                            title="Delete Appointment"
+                            onClick={() => handleDelete(appointment._id)}
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  : "No Appointments Found!"}
               </tbody>
             </table>
           </div>

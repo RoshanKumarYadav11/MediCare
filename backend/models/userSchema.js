@@ -48,6 +48,11 @@ const userSchema = new mongoose.Schema({
     public_id: String,
     url: String,
   },
+  patientReports: [
+    {
+      url: String,
+    },
+  ],
 });
 
 // Hash the password before saving to database (for registration)
@@ -65,13 +70,9 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
 
 // Method to generate a JWT token after successful login
 userSchema.methods.generateJsonWebToken = function () {
-  return jwt.sign(
-    { id: this._id, role: this.role },
-    process.env.JWT_SECRET_KEY,
-    {
-      expiresIn: process.env.JWT_EXPIRES || "1h", // Set token expiry time from env or default to 1 hour
-    }
-  );
+  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES || "1h", // Set token expiry time from env or default to 1 hour
+  });
 };
 
 export const User = mongoose.model("User", userSchema);

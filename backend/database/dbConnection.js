@@ -4,8 +4,7 @@ export const dbConnection = async () => {
   try {
     const connection = await mongoose.connect(process.env.MONGO_URI, {
       dbName: "MEDICARE",
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    
     });
     console.log("Database connected");
   } catch (error) {

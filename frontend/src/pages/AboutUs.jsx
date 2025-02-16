@@ -1,3 +1,6 @@
+import { useNavigate } from "react-router-dom";
+import { isAuthenticated } from "../utils/auth";
+
 const AboutUs = () => {
   const features = [
     {
@@ -23,20 +26,19 @@ const AboutUs = () => {
     },
   ];
 
+  const navigate = useNavigate();
+
+  const handleAppointmentClick = () => {
+    if (isAuthenticated()) {
+      navigate("/appointment"); 
+    } else {
+      navigate("/login"); 
+    }
+  };
+
   return (
     <div className="text-white">
       {/* Hero Section */}
-      {/* <section className="relative py-20 text-center bg-gradient-to-br from-teal-600 to-blue-500">
-          <div className="absolute inset-0 bg-black opacity-50"></div>
-          <div className="relative z-10">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">About Us</h1>
-            <p className="text-lg md:text-xl max-w-3xl mx-auto text-gray-300">
-              Dedicated to providing exceptional healthcare with compassion, innovation, and excellence.
-            </p>
-          </div>
-        </section> */}
-
-      {/* Merged Content Section with Image */}
       <section className="py-12 px-6 bg-gray-100 text-gray-800">
         <div className="container mx-auto flex flex-col md:flex-row items-center">
           {/* Text Content */}
@@ -94,7 +96,7 @@ const AboutUs = () => {
       </section>
 
       {/* Call-to-Action Section with Fixed Background */}
-      <section
+      {/* <section
         className="relative py-24 text-center bg-fixed bg-cover bg-center"
         style={{ backgroundImage: "url('/about/background.png')" }}
       >
@@ -113,6 +115,27 @@ const AboutUs = () => {
           >
             Book an Appointment
           </a>
+        </div>
+      </section> */}
+      <section
+        className="relative py-24 text-center bg-fixed bg-cover bg-center"
+        style={{ backgroundImage: "url('/about/background.png')" }}
+      >
+        <div className="absolute inset-0 bg-black opacity-60"></div>
+        <div className="relative z-10">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Ready to Experience Exceptional Care?
+          </h2>
+          <p className="text-lg max-w-2xl mx-auto mb-8 text-gray-200">
+            Join us on our mission to transform healthcare. Schedule your
+            appointment today and let us serve you better.
+          </p>
+          <button
+            onClick={handleAppointmentClick}
+            className="inline-block bg-[#00df9a] hover:bg-[#248164] text-white text-lg font-semibold py-3 px-6 rounded-md transition duration-300"
+          >
+            Book an Appointment
+          </button>
         </div>
       </section>
     </div>

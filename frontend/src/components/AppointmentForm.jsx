@@ -1,49 +1,152 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
+import axios from "axios";
 
 const AppointmentForm = () => {
   const [doctorDepartment, setDoctorDepartment] = useState("");
-  const [doctor, setDoctor] = useState("");
+  const [doctorName, setDoctor] = useState("");
+  const [departmentsArray, setDepartmentsArray] = useState([]);
+  const [doctorMapping, setDoctorMapping] = useState({});
+  const [doctorIdMapping, setDoctorIdMapping] = useState({});
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
+    fullName: "",
     phone: "",
-    date: "",
+    email: "",
+    doctorDepartment: "",
+    doctorName: "",
+    appointmentDate: "",
     message: "",
+    patientId: "",
+    doctorId: "",
   });
 
-  const departmentsArray = [
-    "Pediatrics",
-    "Orthopedics",
-    "Cardiology",
-    "Neurology",
-    "Oncology",
-    "Radiology",
-    "Physical Therapy",
-    "Dermatology",
-    "ENT",
-  ];
+  useEffect(() => {
+    const fetchDoctorsAndDepartments = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-  const doctorMapping = {
-    Pediatrics: ["Dr. Mira Koirala", "Dr. Anurag Koirala"],
-    Orthopedics: ["Dr. Hem Sagar Rimal"],
-    Cardiology: ["Dr. Anurag Koirala"],
-    Neurology: ["Dr. Mira Koirala"],
-    Oncology: [],
-    Radiology: [],
-    "Physical Therapy": [],
-    Dermatology: [],
-    ENT: [],
-  };
+        if (!token) throw new Error("Authentication token not found!");
+
+        // Fetch doctors data from API
+        const response = await fetch(
+          "http://localhost:4000/api/v1/user/doctors",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const doctors = data.doctors || data;
+
+        if (!Array.isArray(doctors)) {
+          throw new Error("Doctors data is not an array");
+        }
+
+        const departments = new Set();
+        const mapping = {};
+        const idMapping = {};
+
+        doctors.forEach((doctor) => {
+          if (doctor.role === "Doctor") {
+            const department = doctor.doctorDepartment || "Other";
+            departments.add(department);
+
+            if (!mapping[department]) {
+              mapping[department] = [];
+            }
+
+            mapping[department].push(doctor.fullName);
+            idMapping[doctor.fullName] = doctor._id;
+          }
+        });
+
+        setDepartmentsArray([...departments]);
+        setDoctorMapping(mapping);
+        setDoctorIdMapping(idMapping);
+      } catch (error) {
+        console.error("Failed to fetch doctors:", error);
+      }
+    };
+    fetchDoctorsAndDepartments();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
-    alert("Appointment submitted successfully!");
+
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) throw new Error("Authentication token not found!");
+
+      // Fetch the patient info from the API
+      const userResponse = await fetch("http://localhost:4000/api/v1/user/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!userResponse.ok) {
+        throw new Error("Failed to fetch user info");
+      }
+
+      const userData = await userResponse.json();
+      const { _id: patientId, role } = userData.user;
+     
+      // Ensure the user is a patient
+       if (role !== "Patient") {
+         Swal.fire("Error", "Only patients can book an appointment.", "error");
+         return;
+       }
+
+      const doctorID = doctorIdMapping[doctorName];
+
+      // Prepare the data for form submission
+      const response = await axios.post(
+        "http://localhost:4000/api/v1/appointment/appointment",
+        {
+          ...formData,
+          doctorDepartment,
+          doctorName,
+          patientId,
+          doctorId: doctorID,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Response:", response.data);
+      alert("Appointment submitted successfully!");
+
+      // Reset form after successful submission
+      setFormData({
+        fullName: "",
+        phone: "",
+        email: "",
+        doctorDepartment: "",
+        doctorName: "",
+        appointmentDate: "",
+        message: "",
+        patientId: "",
+        doctorId: "",
+      });
+      setDoctorDepartment("");
+      setDoctor("");
+    } catch (error) {
+      console.error("Error submitting appointment:", error);
+      alert("Failed to submit appointment. Please try again.");
+    }
   };
 
   return (
@@ -51,16 +154,16 @@ const AppointmentForm = () => {
       onSubmit={handleSubmit}
       className="grid grid-cols-1 md:grid-cols-2 gap-6"
     >
-      {/* Name */}
+      {/* Full Name */}
       <div className="col-span-1">
-        <label htmlFor="name" className="block text-sm font-medium mb-1">
+        <label htmlFor="fullName" className="block text-sm font-medium mb-1">
           Full Name
         </label>
         <input
           type="text"
-          id="name"
-          name="name"
-          value={formData.name}
+          id="fullName"
+          name="fullName"
+          value={formData.fullName}
           onChange={handleChange}
           placeholder="Enter your name"
           className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
@@ -97,21 +200,24 @@ const AppointmentForm = () => {
           value={formData.phone}
           onChange={handleChange}
           placeholder="Enter your phone number"
-          className="w-full h-10  p-3  bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
+          className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
           required
         />
       </div>
 
-      {/* Date */}
+      {/* Appointment Date */}
       <div className="col-span-1">
-        <label htmlFor="date" className="block text-sm font-medium mb-1">
+        <label
+          htmlFor="appointmentDate"
+          className="block text-sm font-medium mb-1"
+        >
           Appointment Date
         </label>
         <input
           type="date"
-          id="date"
-          name="date"
-          value={formData.date}
+          id="appointmentDate"
+          name="appointmentDate"
+          value={formData.appointmentDate}
           onChange={handleChange}
           className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
           required
@@ -120,7 +226,10 @@ const AppointmentForm = () => {
 
       {/* Department */}
       <div className="col-span-1">
-        <label htmlFor="department" className="block text-sm font-medium mb-1">
+        <label
+          htmlFor="doctorDepartment"
+          className="block text-sm font-medium mb-1"
+        >
           Department
         </label>
         <select
@@ -142,11 +251,11 @@ const AppointmentForm = () => {
 
       {/* Doctor */}
       <div className="col-span-1">
-        <label htmlFor="doctor" className="block text-sm font-medium mb-1">
+        <label htmlFor="doctorName" className="block text-sm font-medium mb-1">
           Doctor
         </label>
         <select
-          value={doctor}
+          value={doctorName}
           onChange={(e) => setDoctor(e.target.value)}
           className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
           disabled={!doctorDepartment} // Disable if no department is selected
@@ -172,15 +281,15 @@ const AppointmentForm = () => {
           onChange={handleChange}
           placeholder="Enter additional details (optional)"
           rows="5"
-          className="w-full p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
+          className="w-full  p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
         />
       </div>
 
-      {/* Submit Button */}
-      <div className="col-span-1 md:col-span-2 text-center">
+      {/* Submit */}
+      <div className="col-span-1 md:col-span-2">
         <button
           type="submit"
-          className="bg-[#00df9a] hover:bg-[#248164] text-white font-semibold py-3 px-8 rounded-md transition duration-300"
+          className="w-full h-10 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none"
         >
           Submit Appointment
         </button>
