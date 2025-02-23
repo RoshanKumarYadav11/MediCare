@@ -109,6 +109,20 @@ const Prescription = () => {
     });
   };
 
+    const addMedicine = (patientId) => {
+      setPrescriptions((prev) => ({
+        ...prev,
+        [patientId]: {
+          ...prev[patientId],
+          medicines: [
+            ...prev[patientId].medicines,
+            { name: "", dosage: "", timing: "", duration: "" },
+          ],
+        },
+      }));
+    };
+
+
 const sendPrescription = async () => {
   try {
     if (!doctorId) {
@@ -169,6 +183,9 @@ const sendPrescription = async () => {
     }
 
     alert("Prescription sent successfully!");
+    // Clear input fields after submission
+    setPrescriptions({});
+    setSelectedPatients([]);
   } catch (error) {
     console.error("Error sending prescription:", error.message);
     alert("Failed to send prescription");
@@ -321,6 +338,12 @@ const sendPrescription = async () => {
                       ))}
                     </tbody>
                   </table>
+                  <button
+                    onClick={() => addMedicine(patientId)}
+                    className="mt-2 px-3 py-1 bg-green-500 text-white rounded"
+                  >
+                    Add Medicine
+                  </button>
                 </div>
               </div>
             );

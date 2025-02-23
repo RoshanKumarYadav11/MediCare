@@ -8,6 +8,7 @@ const AppointmentForm = () => {
   const [departmentsArray, setDepartmentsArray] = useState([]);
   const [doctorMapping, setDoctorMapping] = useState({});
   const [doctorIdMapping, setDoctorIdMapping] = useState({});
+  const [timeSlots, setTimeSlots] = useState([]);
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
@@ -15,6 +16,7 @@ const AppointmentForm = () => {
     doctorDepartment: "",
     doctorName: "",
     appointmentDate: "",
+    appointmentTime: "",
     message: "",
     patientId: "",
     doctorId: "",
@@ -74,6 +76,30 @@ const AppointmentForm = () => {
     fetchDoctorsAndDepartments();
   }, []);
 
+  useEffect(() => {
+    const fetchTimeSlots = async () => {
+      const doctorID = doctorIdMapping[doctorName];
+      if (!doctorID) return; // Exit if doctorID is not found
+
+      try {
+        const response = await axios.get(
+          `http://localhost:4000/api/v1/user/doctor/${doctorID}/availability`
+        );
+        // Assuming you want the time slots for the first date in the array
+        // const slots = response.data.availability?.[0]?.timeSlots || [];
+        const slots = response.data.availability?.flatMap(item => item.timeSlots) || [];
+
+        setTimeSlots(slots);
+      } catch (error) {
+        console.error("Error fetching time slots:", error);
+      }
+    };
+
+    if (doctorName) {
+      fetchTimeSlots();
+    }
+  }, [doctorName, doctorIdMapping]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
@@ -100,12 +126,12 @@ const AppointmentForm = () => {
 
       const userData = await userResponse.json();
       const { _id: patientId, role } = userData.user;
-     
+
       // Ensure the user is a patient
-       if (role !== "Patient") {
-         Swal.fire("Error", "Only patients can book an appointment.", "error");
-         return;
-       }
+      if (role !== "Patient") {
+        Swal.fire("Error", "Only patients can book an appointment.", "error");
+        return;
+      }
 
       const doctorID = doctorIdMapping[doctorName];
 
@@ -137,6 +163,7 @@ const AppointmentForm = () => {
         doctorDepartment: "",
         doctorName: "",
         appointmentDate: "",
+        appointmentTime: "",
         message: "",
         patientId: "",
         doctorId: "",
@@ -205,25 +232,6 @@ const AppointmentForm = () => {
         />
       </div>
 
-      {/* Appointment Date */}
-      <div className="col-span-1">
-        <label
-          htmlFor="appointmentDate"
-          className="block text-sm font-medium mb-1"
-        >
-          Appointment Date
-        </label>
-        <input
-          type="date"
-          id="appointmentDate"
-          name="appointmentDate"
-          value={formData.appointmentDate}
-          onChange={handleChange}
-          className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
-          required
-        />
-      </div>
-
       {/* Department */}
       <div className="col-span-1">
         <label
@@ -269,6 +277,49 @@ const AppointmentForm = () => {
         </select>
       </div>
 
+      {/* Appointment Date */}
+      <div className="col-span-1">
+        <label
+          htmlFor="appointmentDate"
+          className="block text-sm font-medium mb-1"
+        >
+          Appointment Date
+        </label>
+        <input
+          type="date"
+          id="appointmentDate"
+          name="appointmentDate"
+          value={formData.appointmentDate}
+          onChange={handleChange}
+          className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 placeholder-white placeholder-opacity-70 text-white"
+          required
+        />
+      </div>
+
+      {/* Appointment Time */}
+      <div className="col-span-1">
+        <label
+          htmlFor="appointmentTime"
+          className="block text-sm font-medium mb-1"
+        >
+          Appointment Time
+        </label>
+
+        <select
+          name="appointmentTime"
+          onChange={handleChange}
+          value={formData.appointmentTime}
+          className="w-full h-10 p-3 bg-white bg-opacity-20 border-none rounded-lg focus:ring-2 focus:ring-green-300 text-white"
+          disabled={!doctorDepartment}
+        >
+          <option value="">Select a time slot</option>
+          {timeSlots.map((slot) => (
+            <option key={slot._id} value={slot.startTime + "-" + slot.endTime}>
+              {slot.startTime} - {slot.endTime}
+            </option>
+          ))}
+        </select>
+      </div>
       {/* Message */}
       <div className="col-span-1 md:col-span-2">
         <label htmlFor="message" className="block text-sm font-medium mb-1">

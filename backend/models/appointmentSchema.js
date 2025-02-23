@@ -61,6 +61,10 @@ const appointmentSchema = new mongoose.Schema(
         message: "Appointment date must be in the future!",
       },
     },
+     appointmentTime: {
+      type: String,
+      required: [true, "Appointment time is required!"],
+    },
     message: {
       type: String,
       maxlength: [500, "Message must not exceed 500 characters!"],

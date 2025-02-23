@@ -3,12 +3,14 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from 'url';
 
-// Get the directory name correctly for ESM
+// Get current file's directory name
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Create uploads directory with proper path handling
+// Create uploads directory path properly
 const uploadPath = path.join(__dirname, "..", "uploads");
+
+// Check if uploads directory exists, create if it doesn't
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }
@@ -18,8 +20,10 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  },
+    // Add timestamp to filename to make it unique
+    const uniqueName = `${Date.now()}-${file.originalname}`;
+    cb(null, uniqueName);
+  }
 });
 
 const upload = multer({ storage });

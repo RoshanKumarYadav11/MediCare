@@ -126,7 +126,7 @@ const ChatPage = () => {
   // Emit user ID to the socket server after it's fetched
   useEffect(() => {
     if (userId) {
-      socket.emit("set_user", userId); // Emit the userId after it's fetched
+      socket.emit("set_user", userId);
     }
   }, [userId]);
 

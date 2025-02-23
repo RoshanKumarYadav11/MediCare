@@ -18,10 +18,9 @@ config({ path: "./config/config.env" });
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: [process.env.FRONTEND_URL], // Adjust if needed for the frontend URL
+    methods: ["GET", "POST", "PUT", "DELETE","PATCH"],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -37,6 +36,9 @@ app.use('/api/v1/chat', chatRouter);
 app.use("/api/v1/notifications", notificationRouter);
 app.use("/api/v1/prescriptions", prescriptionRouter);
 app.use("/api/v1/billing", billingRouter);
+
+
+
 
 // Error handling middleware
 app.use(errorMiddleware);
