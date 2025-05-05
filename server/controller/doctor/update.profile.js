@@ -8,6 +8,7 @@ const updateDoctorProfile = async (req, res) => {
       specialty,
       licenseNumber,
       phoneNumber,
+      appointmentFee
     } = req.body;
     const doctor = await Doctor.findById(req.user.id);
     if (!doctor) {
@@ -19,6 +20,7 @@ const updateDoctorProfile = async (req, res) => {
     doctor.specialty = specialty;
     doctor.licenseNumber = licenseNumber;
     doctor.phoneNumber = phoneNumber;
+    doctor.appointmentFee = appointmentFee;
     await doctor.save();
     const doctorWithoutPassword = doctor.toObject();
     delete doctorWithoutPassword.password;

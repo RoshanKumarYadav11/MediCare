@@ -13,8 +13,9 @@ import createAdmin from "./utils/createAdmin.js"
 import connectDB from "./configs/dbConnection.js"
 import notificationRoutes from "./routes/notification.js"
 import messageRoutes from "./routes/messages.js"
+import paymentRoutes from "./routes/payment.js"
 
-const __filename = fileURLToPath(import.meta.url)
+const __filename = fileURLToPath(import.meta.url  )
 const __dirname = path.dirname(__filename)
 
 dotenv.config()
@@ -43,6 +44,7 @@ app.use("/api/doctor", doctorRoutes)
 app.use("/api/patient", patientRoutes)
 app.use("/api/notifications", notificationRoutes)
 app.use("/api/messages", messageRoutes)
+app.use ("/api/payment", paymentRoutes)
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/build")))

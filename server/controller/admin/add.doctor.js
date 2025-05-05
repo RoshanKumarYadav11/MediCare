@@ -17,6 +17,7 @@ const addDoctor = async (req, res) => {
     licenseNumber,
     phoneNumber,
     password,
+    appointmentFee,
   } = req.body;
 
   // Validate input
@@ -34,7 +35,7 @@ const addDoctor = async (req, res) => {
     return res.status(400).json({
       success: false,
       error:
-        "All fields (firstName, lastName, email, specialty, licenseNumber, phoneNumber, password) are required",
+        "All fields (firstName, lastName, email, specialty, licenseNumber, phoneNumber, password, appintmentFee) are required",
     });
   }
 
@@ -48,6 +49,7 @@ const addDoctor = async (req, res) => {
       licenseNumber,
       phoneNumber,
       password,
+      appointmentFee,
     });
     return res.status(201).json({
       success: true,
@@ -71,6 +73,7 @@ const validateInput = ({
   licenseNumber,
   phoneNumber,
   password,
+  // appointmentFee
 }) => {
   return (
     firstName?.trim() &&
@@ -91,6 +94,7 @@ const createDoctor = async ({
   licenseNumber,
   phoneNumber,
   password,
+  appointmentFee,
 }) => {
   const doctor = new Doctor({
     firstName,
@@ -100,6 +104,7 @@ const createDoctor = async ({
     licenseNumber,
     phoneNumber,
     password,
+    appointmentFee,
   });
   return await doctor.save();
 };

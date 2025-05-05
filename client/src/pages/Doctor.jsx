@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Calendar,
   Clock,
@@ -12,14 +12,20 @@ import {
   XCircle,
   Bell,
   MessageSquare,
-} from "lucide-react"
-import DashboardLayout from "../layouts/DashboardLayout"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../components/ui/Card"
-import { Input, Label, Select } from "../components/ui/Input"
-import Button from "../components/ui/Button"
-import { useDoctor } from "../hooks/useDoctor"
-import NotificationsPanel from "../components/NotificationsPanel"
-import MessagesPanel from "../components/MessagesPanel"
+} from "lucide-react";
+import DashboardLayout from "../layouts/DashboardLayout";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "../components/ui/Card";
+import { Input, Label, Select } from "../components/ui/Input";
+import Button from "../components/ui/Button";
+import { useDoctor } from "../hooks/useDoctor";
+import NotificationsPanel from "../components/NotificationsPanel";
+import MessagesPanel from "../components/MessagesPanel";
 
 const DoctorDashboard = () => {
   const {
@@ -48,24 +54,24 @@ const DoctorDashboard = () => {
     handleSubmitPrescription,
     handleScheduleAppointment,
     handleInputChange,
-  } = useDoctor()
+  } = useDoctor();
 
-  const [activeTab, setActiveTab] = useState("Dashboard")
-  const [showAppointments, setShowAppointments] = useState(false)
-  const [showPatients, setShowPatients] = useState(false)
+  const [activeTab, setActiveTab] = useState("Dashboard");
+  const [showAppointments, setShowAppointments] = useState(false);
+  const [showPatients, setShowPatients] = useState(false);
 
   useEffect(() => {
-    fetchDoctorProfile()
-    fetchPatientsWithAppointments()
-    fetchAppointments()
-    fetchCompletedAppointments()
-    fetchUpcomingAppointments()
+    fetchDoctorProfile();
+    fetchPatientsWithAppointments();
+    fetchAppointments();
+    fetchCompletedAppointments();
+    fetchUpcomingAppointments();
 
     // Store user ID in localStorage for message component
     if (doctorInfo?._id) {
-      localStorage.setItem("userId", doctorInfo._id)
+      localStorage.setItem("userId", doctorInfo._id);
     }
-  }, [doctorInfo?._id])
+  }, [doctorInfo?._id]);
 
   const navItems = [
     { label: "Dashboard", icon: Home },
@@ -73,71 +79,110 @@ const DoctorDashboard = () => {
     { label: "Patient Management", icon: Users },
     { label: "Messages", icon: MessageSquare },
     { label: "Notifications", icon: Bell },
-  ]
+  ];
 
   const renderDashboard = () => (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader icon={Calendar}>
-            <CardTitle className="text-sm font-medium">Today's Appointments</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Upcoming Appointments
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{appointments.length}</div>
             {appointments.length > 0 ? (
               <p className="text-xs text-gray-500">
-                Next: {appointments[0].patientId.firstName} {appointments[0].patientId.lastName} at{" "}
-                {appointments[0].time}
+                {
+                  appointments.filter(
+                    (app) =>
+                      new Date(app.date).toLocaleDateString() ===
+                      new Date().toLocaleDateString()
+                  ).length
+                }{" "}
+                today, {appointments.length} total
               </p>
             ) : (
-              <p className="text-xs text-gray-500">No appointments today</p>
+              <p className="text-xs text-gray-500">No upcoming appointments</p>
             )}
           </CardContent>
           <CardFooter className="p-2">
             <Button
               variant="ghost"
               className="w-full text-sm text-gray-500 hover:text-gray-900 transition-colors"
-              onClick={() => setShowAppointments(!showAppointments)}
-            >
-              {showAppointments ? "Hide" : "View"} Today's Appointments
+              onClick={() => setShowAppointments(!showAppointments)}>
+              {showAppointments ? "Hide" : "View"} Today&apos;s Appointments
             </Button>
           </CardFooter>
           {showAppointments && (
             <div className="px-4 pb-4">
               {appointments.length > 0 ? (
-                appointments.map((appointment, index) => (
-                  <div key={index} className="flex justify-between items-center py-2 border-t">
-                    <div>
-                      <p className="text-sm font-medium">
-                        {appointment.patientId.firstName} {appointment.patientId.lastName}
-                      </p>
-                      <p className="text-xs text-gray-500">{appointment.reason}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <p className="text-sm text-nowrap">{appointment.time}</p>
+                <div className="space-y-4">
+                  {/* Group appointments by date */}
+                  {Array.from(
+                    appointments.reduce((groups, appointment) => {
+                      const date = new Date(
+                        appointment.date
+                      ).toLocaleDateString();
+                      if (!groups.has(date)) groups.set(date, []);
+                      groups.get(date).push(appointment);
+                      return groups;
+                    }, new Map())
+                  ).map(([date, dateAppointments]) => (
+                    <div key={date} className="border-t pt-2">
+                      <h4 className="text-sm font-medium text-blue-600 mb-2">
+                        {new Date().toLocaleDateString() === date
+                          ? "Today"
+                          : date}
+                      </h4>
+                      {dateAppointments.map((appointment, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center py-2 border-b last:border-b-0">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {appointment.patientId.firstName}{" "}
+                              {appointment.patientId.lastName}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {appointment.reason}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <p className="text-sm text-nowrap">
+                              {appointment.time}
+                            </p>
 
-                      {/* Mark as Completed */}
-                      <button
-                        onClick={() => handleUpdateStatus(appointment._id, "completed")}
-                        className="text-green-600 hover:text-green-800"
-                        title="Mark as Completed"
-                      >
-                        <CheckCircle className="h-5 w-5" />
-                      </button>
+                            {/* Mark as Completed */}
+                            <button
+                              onClick={() =>
+                                handleUpdateStatus(appointment._id, "completed")
+                              }
+                              className="text-green-600 hover:text-green-800"
+                              title="Mark as Completed">
+                              <CheckCircle className="h-5 w-5" />
+                            </button>
 
-                      {/* Cancel Appointment */}
-                      <button
-                        onClick={() => handleUpdateStatus(appointment._id, "cancelled")}
-                        className="text-red-600 hover:text-red-800"
-                        title="Cancel Appointment"
-                      >
-                        <XCircle className="h-5 w-5" />
-                      </button>
+                            {/* Cancel Appointment */}
+                            <button
+                              onClick={() =>
+                                handleUpdateStatus(appointment._id, "cancelled")
+                              }
+                              className="text-red-600 hover:text-red-800"
+                              title="Cancel Appointment">
+                              <XCircle className="h-5 w-5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               ) : (
-                <p className="text-sm text-gray-500 text-center py-4">No appointments scheduled for today</p>
+                <p className="text-sm text-gray-500 text-center py-4">
+                  No upcoming appointments scheduled
+                </p>
               )}
             </div>
           )}
@@ -154,8 +199,7 @@ const DoctorDashboard = () => {
             <Button
               variant="ghost"
               className="w-full text-sm text-gray-500 hover:text-gray-900 transition-colors"
-              onClick={() => setShowPatients(!showPatients)}
-            >
+              onClick={() => setShowPatients(!showPatients)}>
               {showPatients ? "Hide" : "View All"} Patients
             </Button>
           </CardFooter>
@@ -167,9 +211,16 @@ const DoctorDashboard = () => {
                     {patient.firstName} {patient.lastName}
                   </p>
                   <p className="text-xs text-gray-500">
-                    Last visit: {patient.lastVisit ? new Date(patient.lastVisit).toLocaleDateString("en-GB") : "N/A"} |
-                    Next:{" "}
-                    {patient.nextAppointment ? new Date(patient.nextAppointment).toLocaleDateString("en-GB") : "N/A"}
+                    Last visit:{" "}
+                    {patient.lastVisit
+                      ? new Date(patient.lastVisit).toLocaleDateString("en-GB")
+                      : "N/A"}{" "}
+                    | Next:{" "}
+                    {patient.nextAppointment
+                      ? new Date(patient.nextAppointment).toLocaleDateString(
+                          "en-GB"
+                        )
+                      : "N/A"}
                   </p>
                 </div>
               ))}
@@ -185,14 +236,21 @@ const DoctorDashboard = () => {
           <CardContent>
             <ul className="space-y-2">
               {completedAppointments.slice(0, 3).map((appointment, index) => (
-                <li key={appointment._id || index} className="flex items-center space-x-2">
+                <li
+                  key={appointment._id || index}
+                  className="flex items-center space-x-2">
                   <Clock className="h-4 w-4 text-blue-600" />
                   <span>
-                    {appointment.status === "completed" ? "Completed" : "Cancelled"} appointment with{" "}
+                    {appointment.status === "completed"
+                      ? "Completed"
+                      : "Cancelled"}{" "}
+                    appointment with{" "}
                     <strong>
-                      {appointment.patientId?.firstName} {appointment.patientId?.lastName}
+                      {appointment.patientId?.firstName}{" "}
+                      {appointment.patientId?.lastName}
                     </strong>{" "}
-                    on {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
+                    on {new Date(appointment.date).toLocaleDateString()} at{" "}
+                    {appointment.time}
                   </span>
                 </li>
               ))}
@@ -217,15 +275,21 @@ const DoctorDashboard = () => {
           <CardContent>
             <ul className="space-y-2">
               {upcomingAppointments.slice(0, 3).map((appointment, index) => (
-                <li key={appointment._id || index} className="flex items-center space-x-2">
+                <li
+                  key={appointment._id || index}
+                  className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-blue-600" />
                   <span>
                     Appointment with{" "}
                     <strong>
-                      {appointment.patientId?.firstName} {appointment.patientId?.lastName}
+                      {appointment.patientId?.firstName}{" "}
+                      {appointment.patientId?.lastName}
                     </strong>{" "}
-                    on {new Date(appointment.date).toLocaleDateString()} at {appointment.time}.{" "}
-                    <span className="text-gray-500">{"(" + appointment.reason + ")"}</span>
+                    on {new Date(appointment.date).toLocaleDateString()} at{" "}
+                    {appointment.time}.{" "}
+                    <span className="text-gray-500">
+                      {"(" + appointment.reason + ")"}
+                    </span>
                   </span>
                 </li>
               ))}
@@ -244,12 +308,12 @@ const DoctorDashboard = () => {
         </Card>
       </div>
     </>
-  )
+  );
 
   const renderProfile = () => {
     const handleSave = async () => {
-      await updateProfile()
-    }
+      await updateProfile();
+    };
 
     return (
       <Card className="w-full max-w-2xl mx-auto">
@@ -264,7 +328,9 @@ const DoctorDashboard = () => {
                 <Input
                   id="firstName"
                   name="firstName"
-                  value={isEditing ? editedInfo.firstName : doctorInfo?.firstName}
+                  value={
+                    isEditing ? editedInfo.firstName : doctorInfo?.firstName
+                  }
                   onChange={handleInputChange}
                   readOnly={!isEditing}
                 />
@@ -306,7 +372,11 @@ const DoctorDashboard = () => {
               <Input
                 id="licenseNumber"
                 name="licenseNumber"
-                value={isEditing ? editedInfo.licenseNumber : doctorInfo?.licenseNumber}
+                value={
+                  isEditing
+                    ? editedInfo.licenseNumber
+                    : doctorInfo?.licenseNumber
+                }
                 onChange={handleInputChange}
                 readOnly={!isEditing}
               />
@@ -316,7 +386,24 @@ const DoctorDashboard = () => {
               <Input
                 id="phoneNumber"
                 name="phoneNumber"
-                value={isEditing ? editedInfo.phoneNumber : doctorInfo?.phoneNumber}
+                value={
+                  isEditing ? editedInfo.phoneNumber : doctorInfo?.phoneNumber
+                }
+                onChange={handleInputChange}
+                readOnly={!isEditing}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="appointmentFee">Appointment Fee in Nrs.</Label>
+              <Input
+                id="appointmentFee"
+                name="appointmentFee"
+                value={
+                  isEditing
+                    ? editedInfo.appointmentFee
+                    : doctorInfo?.appointmentFee
+                }
                 onChange={handleInputChange}
                 readOnly={!isEditing}
               />
@@ -340,18 +427,18 @@ const DoctorDashboard = () => {
           )}
         </CardFooter>
       </Card>
-    )
-  }
+    );
+  };
 
   const renderPatientManagement = () => {
     const handleSubmit = async (e) => {
-      e.preventDefault()
+      e.preventDefault();
       if (selectedAction === "prescribe-medication") {
-        await handleSubmitPrescription()
+        await handleSubmitPrescription();
       } else if (selectedAction === "schedule-appointment") {
-        await handleScheduleAppointment()
+        await handleScheduleAppointment();
       }
-    }
+    };
 
     return (
       <Card className="w-full max-w-2xl mx-auto">
@@ -362,7 +449,11 @@ const DoctorDashboard = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="patient">Select Patient</Label>
-              <Select id="patient" name="patientId" value={appointmentData.patientId} onChange={handleInputChange}>
+              <Select
+                id="patient"
+                name="patientId"
+                value={appointmentData.patientId}
+                onChange={handleInputChange}>
                 <option value="">Choose a patient</option>
                 {patients.map((patient) => (
                   <option key={patient._id} value={patient._id}>
@@ -373,17 +464,31 @@ const DoctorDashboard = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="action">Action</Label>
-              <Select id="action" name="action" value={selectedAction} onChange={handleInputChange}>
+              <Select
+                id="action"
+                name="action"
+                value={selectedAction}
+                onChange={handleInputChange}>
                 <option value="">Choose an action</option>
-                <option value="schedule-appointment">Schedule Appointment</option>
-                <option value="prescribe-medication">Prescribe Medication</option>
+                <option value="schedule-appointment">
+                  Schedule Appointment
+                </option>
+                <option value="prescribe-medication">
+                  Prescribe Medication
+                </option>
               </Select>
             </div>
             {selectedAction === "schedule-appointment" && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="date">Appointment Date</Label>
-                  <Input id="date" name="date" type="date" value={appointmentData.date} onChange={handleInputChange} />
+                  <Input
+                    id="date"
+                    name="date"
+                    type="date"
+                    value={appointmentData.date}
+                    onChange={handleInputChange}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="time">Preferred Time</Label>
@@ -392,8 +497,7 @@ const DoctorDashboard = () => {
                     name="time"
                     value={appointmentData.time}
                     onChange={handleInputChange}
-                    disabled={availableSlots.length === 0}
-                  >
+                    disabled={availableSlots.length === 0}>
                     <option value="">Choose a time slot</option>
                     {availableSlots.map((slot) => (
                       <option key={slot} value={slot}>
@@ -420,9 +524,12 @@ const DoctorDashboard = () => {
                   <div className="space-y-2 mb-4">
                     <Label>Existing Prescriptions</Label>
                     {existingPrescriptions.map((prescription) => (
-                      <div key={prescription._id} className="flex items-center justify-between bg-gray-100 p-2 rounded">
+                      <div
+                        key={prescription._id}
+                        className="flex items-center justify-between bg-gray-100 p-2 rounded">
                         <span>
-                          {prescription.medication} - {prescription.dosage} - {prescription.frequency} - {" (Till - "}
+                          {prescription.medication} - {prescription.dosage} -{" "}
+                          {prescription.frequency} - {" (Till - "}
                           {new Date(prescription.tilldate).toLocaleDateString()}
                           {") "}
                         </span>
@@ -432,15 +539,15 @@ const DoctorDashboard = () => {
                             onClick={() => handleEditPrescription(prescription)}
                             variant="outline"
                             size="sm"
-                            className="mr-2"
-                          >
+                            className="mr-2">
                             Edit
                           </Button>
                           <Button
-                            onClick={() => handleDeletePrescription(prescription._id)}
+                            onClick={() =>
+                              handleDeletePrescription(prescription._id)
+                            }
                             variant="outline"
-                            size="sm"
-                          >
+                            size="sm">
                             Delete
                           </Button>
                         </div>
@@ -500,31 +607,30 @@ const DoctorDashboard = () => {
           </form>
         </CardContent>
       </Card>
-    )
-  }
+    );
+  };
 
   const renderMessages = () => {
-    return <MessagesPanel />
-  }
+    return <MessagesPanel />;
+  };
 
   const renderNotifications = () => {
-    return <NotificationsPanel />
-  }
+    return <NotificationsPanel />;
+  };
 
   return (
     <DashboardLayout
       title={`Welcome, Dr. ${doctorInfo?.firstName} ${doctorInfo?.lastName}`}
       navItems={navItems}
       activeTab={activeTab}
-      setActiveTab={setActiveTab}
-    >
+      setActiveTab={setActiveTab}>
       {activeTab === "Dashboard" && renderDashboard()}
       {activeTab === "Profile" && renderProfile()}
       {activeTab === "Patient Management" && renderPatientManagement()}
       {activeTab === "Messages" && renderMessages()}
       {activeTab === "Notifications" && renderNotifications()}
     </DashboardLayout>
-  )
-}
+  );
+};
 
-export default DoctorDashboard
+export default DoctorDashboard;

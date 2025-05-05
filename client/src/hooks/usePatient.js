@@ -1,7 +1,10 @@
+"use client";
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import * as patientService from "../services/patientService";
+import * as paymentService from "../services/paymentService";
 
 export const usePatient = () => {
   const navigate = useNavigate();
@@ -22,6 +25,7 @@ export const usePatient = () => {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
 
   const fetchPatientProfile = async () => {
     setLoading(true);
@@ -83,24 +87,114 @@ export const usePatient = () => {
     }
   };
 
+  // Modify the bookAppointment function to handle both paid and free appointments
   const bookAppointment = async () => {
     setLoading(true);
+    setPaymentProcessing(true);
     try {
-      await patientService.bookAppointment(appointmentData);
-      setAppointmentData({
-        doctorId: "",
-        date: "",
-        time: "",
-        reason: "",
-      });
-      setAvailableSlots([]);
-      fetchAppointments();
-      toast.success("Appointment booked successfully.");
-      return true;
+      // Find the selected doctor to check appointment fee
+      const selectedDoctor = doctors.find(
+        (doctor) => doctor._id === appointmentData.doctorId
+      );
+
+      if (!selectedDoctor) {
+        toast.error("Doctor not found");
+        return false;
+      }
+
+      // If appointment fee is 0, book directly
+      if (selectedDoctor.appointmentFee === 0) {
+        const response = await patientService.bookAppointment(appointmentData);
+
+        // Reset form data
+        setAppointmentData({
+          doctorId: "",
+          date: "",
+          time: "",
+          reason: "",
+        });
+        setAvailableSlots([]);
+
+        // Navigate to confirmation page with appointment details
+        navigate("/appointment-confirmation", {
+          state: {
+            appointmentDetails: {
+              ...response.appointment,
+              doctorId: selectedDoctor,
+            },
+          },
+        });
+
+        return true;
+      } else {
+        // If appointment fee > 0, initiate payment
+        const paymentResponse = await paymentService.initiatePayment(
+          appointmentData
+        );
+
+        if (paymentResponse.success) {
+          // Store appointment ID in localStorage for verification after payment
+          localStorage.setItem(
+            "pendingAppointmentId",
+            paymentResponse.appointmentId
+          );
+
+          // Redirect to Khalti payment page
+          window.location.href = paymentResponse.payment_url;
+          return true;
+        } else {
+          toast.error("Failed to initiate payment");
+          return false;
+        }
+      }
     } catch (error) {
       toast.error("Failed to book appointment.");
       setError(error.message);
       return false;
+    } finally {
+      setLoading(false);
+      setPaymentProcessing(false);
+    }
+  };
+
+  // This function now simply passes the pidx to the backend for verification
+  const verifyPayment = async (pidx, appointmentId) => {
+    setLoading(true);
+    try {
+      console.log("Sending payment verification to backend:", {
+        pidx,
+        appointmentId,
+      });
+      const response = await paymentService.verifyPayment(pidx, appointmentId);
+
+      if (response.success) {
+        toast.success("Payment successful! Appointment confirmed.");
+      } else {
+        toast.error(response.message || "Payment verification failed");
+      }
+
+      return response;
+    } catch (error) {
+      console.error("Error verifying payment:", error);
+      toast.error("Payment verification failed");
+      return {
+        success: false,
+        error: error.message,
+        message: "Failed to verify payment with the server",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAppointmentPaymentStatus = async (appointmentId) => {
+    setLoading(true);
+    try {
+      const response = await paymentService.getPaymentStatus(appointmentId);
+      return response;
+    } catch (error) {
+      console.error("Error getting payment status:", error);
+      return { success: false, error: error.message };
     } finally {
       setLoading(false);
     }
@@ -186,11 +280,14 @@ export const usePatient = () => {
     availableSlots,
     loading,
     error,
+    paymentProcessing,
     fetchPatientProfile,
     updateProfile,
     fetchDoctors,
     fetchAvailableSlots,
     bookAppointment,
+    verifyPayment,
+    getAppointmentPaymentStatus,
     fetchAppointments,
     fetchCompletedAppointments,
     fetchCareTeam,

@@ -10,6 +10,7 @@ const doctorSchema = new mongoose.Schema({
   licenseNumber: { type: String, required: true, unique: true },
   phoneNumber: { type: String, required: true },
   role: { type: String, default: "doctor" },
+  appointmentFee:{type: Number, required: true, default:0},
 });
 
 doctorSchema.pre("save", async function (next) {

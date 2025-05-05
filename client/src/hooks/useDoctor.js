@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import * as doctorService from "../services/doctorService";
 
 export const useDoctor = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [doctorInfo, setDoctorInfo] = useState(null);
   const [editedInfo, setEditedInfo] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -22,6 +22,7 @@ export const useDoctor = () => {
     dosage: "",
     frequency: "",
     tilldate: "",
+    appointmentFee:"",
   });
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedAction, setSelectedAction] = useState("");

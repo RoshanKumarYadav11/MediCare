@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Calendar,
   Clock,
@@ -16,14 +16,20 @@ import {
   ShieldCheck,
   Bell,
   MessageSquare,
-} from "lucide-react"
-import DashboardLayout from "../layouts/DashboardLayout"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../components/ui/Card"
-import { Input, Label, Select } from "../components/ui/Input"
-import Button from "../components/ui/Button"
-import { useAdmin } from "../hooks/useAdmin"
-import AdminNotificationsPanel from "../components/AdminNotificationsPanel"
-import MessagesPanel from "../components/MessagesPanel"
+} from "lucide-react";
+import DashboardLayout from "../layouts/DashboardLayout";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "../components/ui/Card";
+import { Input, Label, Select } from "../components/ui/Input";
+import Button from "../components/ui/Button";
+import { useAdmin } from "../hooks/useAdmin";
+import AdminNotificationsPanel from "../components/AdminNotificationsPanel";
+import MessagesPanel from "../components/MessagesPanel";
 
 const AdminDashboard = () => {
   const {
@@ -50,29 +56,29 @@ const AdminDashboard = () => {
     addDoctor,
     addAdmin,
     handleInputChange,
-  } = useAdmin()
+  } = useAdmin();
 
-  const [activeTab, setActiveTab] = useState("Dashboard")
-  const [showDoctors, setShowDoctors] = useState(false)
-  const [showPatients, setShowPatients] = useState(false)
-  const [showDoctorPassword, setShowDoctorPassword] = useState(false)
-  const [showAdminPassword, setShowAdminPassword] = useState(false)
-  const [hospitalCapacity] = useState(150)
+  const [activeTab, setActiveTab] = useState("Dashboard");
+  const [showDoctors, setShowDoctors] = useState(false);
+  const [showPatients, setShowPatients] = useState(false);
+  const [showDoctorPassword, setShowDoctorPassword] = useState(false);
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
+  const [hospitalCapacity] = useState(150);
 
   useEffect(() => {
-    fetchAdminProfile()
-    fetchTotalDoctors()
-    fetchTotalPatients()
-    fetchDoctorOverview()
-    fetchPatientOverview()
-    fetchCompletedAppointments()
-    fetchUpcomingAppointments()
+    fetchAdminProfile();
+    fetchTotalDoctors();
+    fetchTotalPatients();
+    fetchDoctorOverview();
+    fetchPatientOverview();
+    fetchCompletedAppointments();
+    fetchUpcomingAppointments();
 
     // Store user ID in localStorage for message component
     if (adminInfo?._id) {
-      localStorage.setItem("userId", adminInfo._id)
+      localStorage.setItem("userId", adminInfo._id);
     }
-  }, [adminInfo?._id])
+  }, [adminInfo?._id]);
 
   const navItems = [
     { label: "Dashboard", icon: Home },
@@ -81,16 +87,18 @@ const AdminDashboard = () => {
     { label: "Add Admin", icon: ShieldCheck },
     { label: "Messages", icon: MessageSquare },
     { label: "Notifications", icon: Bell },
-  ]
+  ];
 
   const renderDashboard = () => {
-    const occupancyRate = ((totalPatients / hospitalCapacity) * 100).toFixed(2)
+    const occupancyRate = ((totalPatients / hospitalCapacity) * 100).toFixed(2);
     return (
       <>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader icon={Stethoscope}>
-              <CardTitle className="text-sm font-medium">Total Doctors</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Doctors
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalDoctors}</div>
@@ -99,7 +107,9 @@ const AdminDashboard = () => {
           </Card>
           <Card>
             <CardHeader icon={Users}>
-              <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Patients
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalPatients}</div>
@@ -108,7 +118,9 @@ const AdminDashboard = () => {
           </Card>
           <Card>
             <CardHeader icon={Activity}>
-              <CardTitle className="text-sm font-medium">Hospital Occupancy</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Hospital Occupancy
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{occupancyRate}%</div>
@@ -119,7 +131,9 @@ const AdminDashboard = () => {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader icon={Stethoscope}>
-              <CardTitle className="text-sm font-medium">Doctor Overview</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Doctor Overview
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{doctorOverview.length}</div>
@@ -129,18 +143,21 @@ const AdminDashboard = () => {
               <Button
                 variant="ghost"
                 className="w-full text-sm text-gray-500 hover:text-gray-900 transition-colors"
-                onClick={() => setShowDoctors(!showDoctors)}
-              >
+                onClick={() => setShowDoctors(!showDoctors)}>
                 {showDoctors ? "Hide" : "View All"} Doctors
               </Button>
             </CardFooter>
             {showDoctors && (
               <div className="px-4 pb-4">
                 {doctorOverview.map((doctor, index) => (
-                  <div key={index} className="flex justify-between items-center py-2 border-t">
+                  <div
+                    key={index}
+                    className="flex justify-between items-center py-2 border-t">
                     <div>
                       <p className="text-sm font-medium">{doctor.name}</p>
-                      <p className="text-xs text-gray-500">{doctor.specialty}</p>
+                      <p className="text-xs text-gray-500">
+                        {doctor.specialty}
+                      </p>
                     </div>
                     <p className="text-sm">{doctor.patients} patients</p>
                   </div>
@@ -150,7 +167,9 @@ const AdminDashboard = () => {
           </Card>
           <Card>
             <CardHeader icon={Users}>
-              <CardTitle className="text-sm font-medium">Patient Overview</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Patient Overview
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{patientOverview.length}</div>
@@ -160,8 +179,7 @@ const AdminDashboard = () => {
               <Button
                 variant="ghost"
                 className="w-full text-sm text-gray-500 hover:text-gray-900 transition-colors"
-                onClick={() => setShowPatients(!showPatients)}
-              >
+                onClick={() => setShowPatients(!showPatients)}>
                 {showPatients ? "Hide" : "View All"} Patients
               </Button>
             </CardFooter>
@@ -170,7 +188,9 @@ const AdminDashboard = () => {
                 {patientOverview.map((patient, index) => (
                   <div key={index} className="py-2 border-t">
                     <p className="text-sm font-medium">{patient.name}</p>
-                    <p className="text-xs text-gray-500">Total Appointments: {patient.appointments}</p>
+                    <p className="text-xs text-gray-500">
+                      Total Appointments: {patient.appointments}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -185,17 +205,25 @@ const AdminDashboard = () => {
             <CardContent>
               <ul className="space-y-2">
                 {completedAppointments.slice(0, 3).map((appointment, index) => (
-                  <li key={appointment._id || index} className="flex items-center space-x-2">
+                  <li
+                    key={appointment._id || index}
+                    className="flex items-center space-x-2">
                     <Clock className="h-4 w-4 text-blue-600" />
                     <span>
                       <strong>
-                        {appointment.doctorId?.firstName} {appointment.doctorId?.lastName}
+                        {appointment.doctorId?.firstName}{" "}
+                        {appointment.doctorId?.lastName}
                       </strong>
-                      {appointment.status === "completed" ? " completed" : " cancelled"} appointment with{" "}
+                      {appointment.status === "completed"
+                        ? " completed"
+                        : " cancelled"}{" "}
+                      appointment with{" "}
                       <strong>
-                        {appointment.patientId?.firstName} {appointment.patientId?.lastName}
+                        {appointment.patientId?.firstName}{" "}
+                        {appointment.patientId?.lastName}
                       </strong>{" "}
-                      on {new Date(appointment.date).toLocaleDateString()} at {appointment.time}
+                      on {new Date(appointment.date).toLocaleDateString()} at{" "}
+                      {appointment.time}
                     </span>
                   </li>
                 ))}
@@ -219,19 +247,26 @@ const AdminDashboard = () => {
             <CardContent>
               <ul className="space-y-2">
                 {upcomingAppointments.slice(0, 3).map((appointment, index) => (
-                  <li key={appointment._id || index} className="flex items-center space-x-2">
+                  <li
+                    key={appointment._id || index}
+                    className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4 text-blue-600" />
                     <span>
                       <strong>
-                        {appointment.doctorId?.firstName} {appointment.doctorId?.lastName}
+                        {appointment.doctorId?.firstName}{" "}
+                        {appointment.doctorId?.lastName}
                       </strong>
                       {"'s "}
                       appointment with{" "}
                       <strong>
-                        {appointment.patientId?.firstName} {appointment.patientId?.lastName}
+                        {appointment.patientId?.firstName}{" "}
+                        {appointment.patientId?.lastName}
                       </strong>{" "}
-                      on {new Date(appointment.date).toLocaleDateString()} at {appointment.time}.{" "}
-                      <span className="text-gray-500">{"(" + appointment.reason + ")"}</span>
+                      on {new Date(appointment.date).toLocaleDateString()} at{" "}
+                      {appointment.time}.{" "}
+                      <span className="text-gray-500">
+                        {"(" + appointment.reason + ")"}
+                      </span>
                     </span>
                   </li>
                 ))}
@@ -241,7 +276,9 @@ const AdminDashboard = () => {
                   <>
                     <li className="flex items-center space-x-2">
                       <Clock className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-400">No upcoming schedule.</span>
+                      <span className="text-gray-400">
+                        No upcoming schedule.
+                      </span>
                     </li>
                   </>
                 )}
@@ -250,13 +287,13 @@ const AdminDashboard = () => {
           </Card>
         </div>
       </>
-    )
-  }
+    );
+  };
 
   const renderProfile = () => {
     const handleSave = async () => {
-      await updateProfile()
-    }
+      await updateProfile();
+    };
 
     return (
       <Card className="w-full max-w-2xl mx-auto">
@@ -271,7 +308,9 @@ const AdminDashboard = () => {
                 <Input
                   id="firstName"
                   name="firstName"
-                  value={isEditing ? editedInfo.firstName : adminInfo?.firstName}
+                  value={
+                    isEditing ? editedInfo.firstName : adminInfo?.firstName
+                  }
                   onChange={(e) => handleInputChange(e)}
                   readOnly={!isEditing}
                 />
@@ -317,14 +356,14 @@ const AdminDashboard = () => {
           )}
         </CardFooter>
       </Card>
-    )
-  }
+    );
+  };
 
   const renderAddDoctor = () => {
     const handleSubmit = async (e) => {
-      e.preventDefault()
-      await addDoctor()
-    }
+      e.preventDefault();
+      await addDoctor();
+    };
 
     return (
       <Card className="w-full max-w-2xl mx-auto">
@@ -373,8 +412,7 @@ const AdminDashboard = () => {
                 name="specialty"
                 value={doctorData.specialty}
                 onChange={(e) => handleInputChange(e, "doctor")}
-                required
-              >
+                required>
                 <option value="">Choose a specialty</option>
                 <option value="cardiology">Cardiology</option>
                 <option value="neurology">Neurology</option>
@@ -397,6 +435,19 @@ const AdminDashboard = () => {
                 required
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="appointmentFee">Appointment Fee</Label>
+              <Input
+                id="appointmentFee"
+                name="appointmentFee"
+                type="number"
+                value={doctorData.appointmentFee}
+                onChange={(e) => handleInputChange(e, "doctor")}
+                required
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="phoneNumber">Phone Number</Label>
               <Input
@@ -423,14 +474,15 @@ const AdminDashboard = () => {
                   type="button"
                   variant="ghost"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowDoctorPassword(!showDoctorPassword)}
-                >
+                  onClick={() => setShowDoctorPassword(!showDoctorPassword)}>
                   {showDoctorPassword ? (
                     <EyeOff className="h-4 w-4 text-gray-500" />
                   ) : (
                     <Eye className="h-4 w-4 text-gray-500" />
                   )}
-                  <span className="sr-only">{showDoctorPassword ? "Hide password" : "Show password"}</span>
+                  <span className="sr-only">
+                    {showDoctorPassword ? "Hide password" : "Show password"}
+                  </span>
                 </Button>
               </div>
             </div>
@@ -440,14 +492,14 @@ const AdminDashboard = () => {
           </form>
         </CardContent>
       </Card>
-    )
-  }
+    );
+  };
 
   const renderAddAdmin = () => {
     const handleSubmit = async (e) => {
-      e.preventDefault()
-      await addAdmin()
-    }
+      e.preventDefault();
+      await addAdmin();
+    };
 
     return (
       <Card className="w-full max-w-2xl mx-auto">
@@ -504,14 +556,15 @@ const AdminDashboard = () => {
                   type="button"
                   variant="ghost"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowAdminPassword(!showAdminPassword)}
-                >
+                  onClick={() => setShowAdminPassword(!showAdminPassword)}>
                   {showAdminPassword ? (
                     <EyeOff className="h-4 w-4 text-gray-500" />
                   ) : (
                     <Eye className="h-4 w-4 text-gray-500" />
                   )}
-                  <span className="sr-only">{showAdminPassword ? "Hide password" : "Show password"}</span>
+                  <span className="sr-only">
+                    {showAdminPassword ? "Hide password" : "Show password"}
+                  </span>
                 </Button>
               </div>
             </div>
@@ -534,24 +587,25 @@ const AdminDashboard = () => {
           </form>
         </CardContent>
       </Card>
-    )
-  }
+    );
+  };
 
   const renderMessages = () => {
-    return <MessagesPanel />
-  }
+    return <MessagesPanel />;
+  };
 
   const renderNotifications = () => {
-    return <AdminNotificationsPanel />
-  }
+    return <AdminNotificationsPanel />;
+  };
 
   return (
     <DashboardLayout
-      title={`Welcome, ${adminInfo ? `${adminInfo.firstName} ${adminInfo.lastName}` : "Admin"}`}
+      title={`Welcome, ${
+        adminInfo ? `${adminInfo.firstName} ${adminInfo.lastName}` : "Admin"
+      }`}
       navItems={navItems}
       activeTab={activeTab}
-      setActiveTab={setActiveTab}
-    >
+      setActiveTab={setActiveTab}>
       {activeTab === "Dashboard" && renderDashboard()}
       {activeTab === "Profile" && renderProfile()}
       {activeTab === "Add Doctor" && renderAddDoctor()}
@@ -559,7 +613,7 @@ const AdminDashboard = () => {
       {activeTab === "Messages" && renderMessages()}
       {activeTab === "Notifications" && renderNotifications()}
     </DashboardLayout>
-  )
-}
+  );
+};
 
-export default AdminDashboard
+export default AdminDashboard;

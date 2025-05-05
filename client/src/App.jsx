@@ -11,6 +11,8 @@ import SignUp from "./pages/SignUp";
 import Patient from "./pages/Patient";
 import Doctor from "./pages/Doctor";
 import Admin from "./pages/Admin";
+import PaymentCallback from "./pages/PaymentCallback";
+import AppointmentConfirmation from "./pages/AppointmentConfirmation";
 import { Toaster } from "react-hot-toast";
 
 function App() {
@@ -24,6 +26,11 @@ function App() {
           <Route path="/patient" element={<Patient />} />
           <Route path="/doctor" element={<Doctor />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/payment-callback" element={<PaymentCallback />} />
+          <Route
+            path="/appointment-confirmation"
+            element={<AppointmentConfirmation />}
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Toaster position="top-center" />
